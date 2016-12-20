@@ -72,7 +72,7 @@ public class SendData extends AsyncTask<String, Integer, Boolean> {
 		HttpClient httpClient = new DefaultHttpClient(httpParameters);
 
 
-		HttpPost post = new HttpPost("http://192.168.1.100:8080/JessServer/jess/server/analysis");
+		HttpPost post = new HttpPost("http://animalhealth.ddns.net:8080/JessServer/jess/server/analysis");
 
 
 		post.setHeader("content-type","application/json");
@@ -81,17 +81,19 @@ public class SendData extends AsyncTask<String, Integer, Boolean> {
 
 
 			// make de new Json object with all parameters to send
-            JSONObject data = new JSONObject();
+
+            String string ="";
+
             for(int i =0;i<arrayList.size();i++) {
 
-                data.put(arrayList.get(i),arrayList.get(i));
+                string+=arrayList.get(i);
 
             }
 
-			StringEntity entity = new StringEntity(data.toString());
+			StringEntity entity = new StringEntity(string);
 			post.setEntity(entity);
 
-			System.out.println("this is the Json"+data);
+			System.out.println("this is the Json"+string);
 
 
 			// Execute the http
