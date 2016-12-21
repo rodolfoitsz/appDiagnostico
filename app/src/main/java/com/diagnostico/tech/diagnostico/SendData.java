@@ -4,6 +4,7 @@ import android.app.ProgressDialog;
 import android.os.AsyncTask;
 import android.widget.TextView;
 
+import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpPost;
@@ -12,11 +13,11 @@ import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.params.BasicHttpParams;
 import org.apache.http.params.HttpConnectionParams;
 import org.apache.http.params.HttpParams;
-import org.json.JSONObject;
+import org.apache.http.util.EntityUtils;
 
 import java.util.ArrayList;
 
-public class SendData extends AsyncTask<String, Integer, Boolean> {
+public class SendData extends AsyncTask<String, Integer, Object[]> {
 
 
 
@@ -52,9 +53,13 @@ public class SendData extends AsyncTask<String, Integer, Boolean> {
 	}
 
 	// function that send a HTTP POST to a REST web server
-	public Boolean doInBackground(String... params) {
+	public Object[] doInBackground(String... params) {
 
-		boolean resul = true;
+
+		Object[] ObjectArray = new Object[2];
+		String diagnostico="";
+
+		Boolean resul = true;
 
 		System.out.println("Send data function");
 
@@ -72,7 +77,7 @@ public class SendData extends AsyncTask<String, Integer, Boolean> {
 		HttpClient httpClient = new DefaultHttpClient(httpParameters);
 
 
-		HttpPost post = new HttpPost("http://192.168.1.100:8080/JessServer/jess/server/analysis");
+		HttpPost post = new HttpPost("http://animalhealth.ddns.net:8080/JessServer/jess/server/analysis");
 
 
 		post.setHeader("content-type","application/json");
@@ -81,17 +86,19 @@ public class SendData extends AsyncTask<String, Integer, Boolean> {
 
 
 			// make de new Json object with all parameters to send
-            JSONObject data = new JSONObject();
+
+            String string ="";
+
             for(int i =0;i<arrayList.size();i++) {
 
-                data.put(arrayList.get(i),arrayList.get(i));
+                string+=arrayList.get(i);
 
             }
 
-			StringEntity entity = new StringEntity(data.toString());
+			StringEntity entity = new StringEntity(string);
 			post.setEntity(entity);
 
-			System.out.println("this is the Json"+data);
+			System.out.println("this is the Json"+string);
 
 
 			// Execute the http
@@ -116,9 +123,10 @@ public class SendData extends AsyncTask<String, Integer, Boolean> {
 			//    int respStr = resp.getStatusLine().getStatusCode();
 
 
-
 			if (respStr == 200) {
 				resul = true;
+				HttpEntity entityResponse = resp.getEntity();
+				diagnostico = EntityUtils.toString(entityResponse);
 			} else
 				resul = false;
 
@@ -133,30 +141,37 @@ public class SendData extends AsyncTask<String, Integer, Boolean> {
 
 			resul = false;
 
+
+
+
 		}
 
 
 		System.out.println("this is result on send data"+resul);
 
-		return resul;
+
+		ObjectArray[0]=resul;
+		ObjectArray[1]=diagnostico;
+
+		return ObjectArray;
 
 
 	}
 
-	protected void onPostExecute(Boolean result) {
+	protected void onPostExecute(Object[] result) {
 		super.onPostExecute(result);
 
 		System.out.println("result on post execute SenData"+result);
+		TextView tv_answer = (TextView)activity.findViewById(R.id.tv_answer);
 
+		if (((Boolean) result[0])) {
 
-		if (result) {
-            TextView tv_answer = (TextView)activity.findViewById(R.id.tv_answer);
-            tv_answer.setText(result.toString());
+            tv_answer.setText((String) result[1]);
 
 
 		} else {
 
-
+			tv_answer.setText("checa tu conexion a internet ");
 
 		}
 
